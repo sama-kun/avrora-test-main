@@ -1,0 +1,11 @@
+# Игнорировать node_modules во всех подпапках
+**/node_modules/
+
+# Игнорировать все .env файлы во всех подпапках
+**/.env*
+.env*
+
+# Игнорировать package-lock.json во всех подпапках
+**/package-lock.json
+
+kafka-data/

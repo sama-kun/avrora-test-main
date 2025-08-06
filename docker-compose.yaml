@@ -1,0 +1,136 @@
+version: '3.8'
+
+services:
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    container_name: zookeeper
+    ports:
+      - "2181:2181"
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: kafka
+    ports:
+      - "9092:9092"
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+
+  postgres:
+    image: postgres
+    container_name: postgres-microservices
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: root
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./init-db.sh:/docker-entrypoint-initdb.d/init-db.sh:ro
+
+  redis:
+    image: redis:latest
+    container_name: redis
+    ports:
+      - '6379:6379'
+
+  task-service:
+    build:
+      context: ./task-service
+      dockerfile: Dockerfile
+    container_name: task-service
+    depends_on:
+      - kafka
+      - postgres
+      - redis
+      - zookeeper
+    environment:
+      PORT: 3001
+      KAFKA_BROKERS: kafka:9092
+      KAFKA_CLIENT_ID: task-service
+      DB_HOST: postgres-microservices
+      DB_PORT: 5432
+      DB_USER: root
+      DB_PASSWORD: root
+      DB_NAME: tasks
+      REDIS_URL: redis://redis:6379
+    ports:
+      - '3001:3001'
+
+  notification-service:
+    build:
+      context: ./notification-service
+      dockerfile: Dockerfile
+    container_name: notification-service
+    depends_on:
+      - kafka
+      - redis
+      - zookeeper
+    environment:
+      PORT: 3002
+      KAFKA_BROKERS: kafka:9092
+      KAFKA_CLIENT_ID: notification-service
+      DB_HOST: postgres-microservices
+      DB_PORT: 5432
+      DB_USER: root
+      DB_PASSWORD: root
+      DB_NAME: notifications
+      REDIS_URL: redis://redis:6379
+    ports:
+      - '3002:3002'
+
+  gateway:
+    build:
+      context: ./gateway-service
+      dockerfile: Dockerfile
+    container_name: gateway
+    depends_on:
+      - task-service
+      - notification-service
+      - kafka
+      - redis
+    ports:
+      - '3000:3000'
+    environment:
+      TASK_GRPC_URL: task-service:3001
+      NOTIFICATION_GRPC_URL: notification-service:3002
+      KAFKA_BROKERS: kafka:9092
+      PORT: 3000
+      REDIS_URL: redis://redis:6379
+
+  worker:
+    build:
+      context: ./worker-service
+      dockerfile: Dockerfile
+    container_name: worker
+    depends_on:
+      - kafka
+      - redis
+      - postgres
+      - zookeeper
+
+    ports:
+      - '3003:3003'
+    environment:
+      PORT: 3003
+      KAFKA_BROKERS: kafka:9092
+      KAFKA_CLIENT_ID: worker-service
+
+      DB_HOST: postgres-microservices
+      DB_PORT: 5432
+      DB_USER: root
+      DB_PASSWORD: root
+      DB_NAME: tasks
+
+      REDIS_URL: redis://redis:6379
+
+volumes:
+  postgres-data:
