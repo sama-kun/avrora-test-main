@@ -1,0 +1,110 @@
+{
+	"info": {
+		"_postman_id": "5cd96240-adc4-4411-b8b8-c9a9bbfdc048",
+		"name": "Avrora",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "43686185"
+	},
+	"item": [
+		{
+			"name": "create task",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"payload\": \"Test\",\n    \"priority\": 1\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/api/task/",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"task",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get by id",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/task/e961679d-8dfb-4b6a-a672-d24acafa062a",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"task",
+						"e961679d-8dfb-4b6a-a672-d24acafa062a"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "create notification",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"userId\": \"b2ddf235-d115-46a6-8dc2-e1c4da16641d\",\n    \"type\": \"sms\",\n    \"message\": \"Test message\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/api/notification",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"notification"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get notification by id",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		},
+		{
+			"name": "get metrics",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/metrics",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"metrics"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
